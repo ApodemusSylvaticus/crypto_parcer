@@ -9,7 +9,6 @@ const client = Binance({
     apiSecret: process.env.BINANCE_API_SECRET,
 });
 
-
 export type PositionType = 'Long' | 'Short';
 
 export interface ITgMessage {
@@ -45,7 +44,7 @@ class BinanceUserStream {
             if (!position || parseFloat(position.positionAmt) === 0) return null;
 
             console.log('--------------------------------');
-            console.log('position', position)
+            console.log('position', position);
             /*return {
                 symbol: position.symbol,
                 entry: parseFloat(position.entryPrice),
@@ -65,7 +64,6 @@ class BinanceUserStream {
     async parseOrderUpdate(order: any): Promise<ITgMessage | null> {
         if (!order) return null;
 
-
         const positionType: PositionType = order.side === 'BUY' ? 'Long' : 'Short';
         const entryPrice = parseFloat(order.price);
         const currentPrice = parseFloat(order.avgFillPrice) || entryPrice;
@@ -73,7 +71,7 @@ class BinanceUserStream {
         const positionInfo = await this.getFuturesPosition(order.symbol);
         if (!positionInfo) return null;
 
-       /* return {
+        /* return {
             symbol: order.symbol,
             entry: entryPrice,
             sl: {
@@ -91,37 +89,35 @@ class BinanceUserStream {
     }
 
     // 📌 Запускаем WebSocket для ордеров
-     startWebSocket() {
-        client.ws.futuresUser((data) => {
+    startWebSocket() {
+        client.ws.futuresUser(data => {
             console.log('New Order Update:', data);
+        });
 
-
-        })
-
-         setTimeout(() => {
-             client.futuresAccountInfo().then((res) => {
-                 const filePath = './futures_account_info.json';
-                 fs.writeFileSync(filePath, JSON.stringify(res, null, 2));
-                 console.log(`Данные сохранены в файл: ${filePath}`);
-             })
-             client.futuresOpenOrders({symbol: 'BTCUSDT'}).then(r => {
-                 const filePath = './futuresOpenOrders.json';
-                 fs.writeFileSync(filePath, JSON.stringify(r, null, 2));
-             })
-             client.futuresPositionRisk({symbol:'BTCUSDT'}).then(r => {
-                 const filePath = './futures_positionRisk.json';
-                 fs.writeFileSync(filePath, JSON.stringify(r, null, 2));
-             })
-             client.futuresAllOrders({symbol: 'BTCUSDT'}).then(r => {
-                 const filePath = './futuresAllOrders.json';
-                 fs.writeFileSync(filePath, JSON.stringify(r, null, 2));
-             })
-             client.futuresBook({symbol: 'BTCUSDT'}).then(r => {
-                 const filePath = './futuresBook.json';
-                 fs.writeFileSync(filePath, JSON.stringify(r, null, 2));
-             })
-         }, 10000)
-/*
+        setTimeout(() => {
+            client.futuresAccountInfo().then(res => {
+                const filePath = './futures_account_info.json';
+                fs.writeFileSync(filePath, JSON.stringify(res, null, 2));
+                console.log(`Данные сохранены в файл: ${filePath}`);
+            });
+            client.futuresOpenOrders({ symbol: 'BTCUSDT' }).then(r => {
+                const filePath = './futuresOpenOrders.json';
+                fs.writeFileSync(filePath, JSON.stringify(r, null, 2));
+            });
+            client.futuresPositionRisk({ symbol: 'BTCUSDT' }).then(r => {
+                const filePath = './futures_positionRisk.json';
+                fs.writeFileSync(filePath, JSON.stringify(r, null, 2));
+            });
+            client.futuresAllOrders({ symbol: 'BTCUSDT' }).then(r => {
+                const filePath = './futuresAllOrders.json';
+                fs.writeFileSync(filePath, JSON.stringify(r, null, 2));
+            });
+            client.futuresBook({ symbol: 'BTCUSDT' }).then(r => {
+                const filePath = './futuresBook.json';
+                fs.writeFileSync(filePath, JSON.stringify(r, null, 2));
+            });
+        }, 10000);
+        /*
         client.ws.futuresUser((data) => {
             console.log('New Order Update:', data);
             this.parseOrderUpdate(data).then(parsedMessage => {
@@ -140,11 +136,6 @@ class BinanceUserStream {
 
 // Запускаем WebSocket Binance
 const userStream = new BinanceUserStream();
-
-
-
-
-
 
 /*
 

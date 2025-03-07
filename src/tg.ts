@@ -1,41 +1,38 @@
 import TelegramBot from 'node-telegram-bot-api';
-import {ITgMessage, PositionType} from "../interface";
-
+import { ITgMessage, PositionType } from './interface';
 
 export class TgClient {
-    #CHAT_ID = Number(process.env.TG_CHAT_ID);
-    #TG_BOT_TOKEN = process.env.TG_BOT_TOKEN;
+    chatId: number ;
+    tgBotToken: string;
     bot;
 
     constructor(polling = false) {
-        if (!this.#TG_BOT_TOKEN) {
-            throw new Error("❌ TG_BOT_TOKEN не задан! Проверьте .env файл.");
+
+        if ( process.env.TG_BOT_TOKEN === undefined || process.env.TG_CHAT_ID === undefined ) {
+            throw new Error('TG_BOT_TOKEN is not set! Check your .env file.');
         }
-        this.bot = new TelegramBot(this.#TG_BOT_TOKEN, { polling });
+        this.chatId = Number(process.env.TG_CHAT_ID)
+        this.tgBotToken = process.env.TG_BOT_TOKEN
+        this.bot = new TelegramBot(this.tgBotToken, { polling });
     }
 
     sendMessageToGroup = async (message: ITgMessage) => {
-        if (!message) {
-            console.warn("⚠️ Пустое сообщение не отправлено.");
-            return;
-        }
+            const text = `
+📌 ${message.symbol}
+📍 Entry Point: ${message.entry}
+📈 Position Type: ${message.positionType}
+💰 Actual price: ${message.priceWhenSignalGenerated}
 
-        const text = `
- *Пара:* \`${message.symbol}\`  
- *Точка входа:* \`${message.entry}\`  
- *Стоп-лосс:* \`${message.sl.value}\` (_${message.sl.percent}%_)  
- *Тейк-профит:* \`${message.tp.value}\` (_${message.tp.percent}%_)  
- *Цена при генерации:* \`${message.priceWhenSignalGenerated}\`  
- *Тип позиции:* \`${message.positionType}\`  
-${message.risk ? ` *Риск:* \`${message.risk}\`\n` : ''}${message.leverage ? `*Кредитное плечо:* \`${message.leverage}\`\n` : ''}
-    `.trim();
-
+━━━━━━━━━━━━━━━━━━
+🔴Stop-Loss: ${message.sl.value} (${message.sl.percent}%)
+🟢 Take-Profit: ${message.tp.value} (${message.tp.percent}%)
+${message.risk ? `💎 Risk: \`${message.risk}\`\n` : ''}${message.leverage ? `⚖️ Leverage: ${message.leverage}` : ''}
+`.trim();
 
         try {
-            await this.bot.sendMessage(this.#CHAT_ID, text);
-            console.log("✅ Сообщение отправлено:", text);
+            await this.bot.sendMessage(this.chatId, text);
         } catch (error: any) {
-            console.error("❌ Ошибка отправки:", error.message);
+            console.error('Failed to send tg message', error.message);
         }
     };
 }
